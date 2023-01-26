@@ -12,27 +12,35 @@ from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.exceptions import InvalidSignature
 
 
-def generate_private_key():
+def generate_private_key(keyname: str, passphrase: bytes, encoding: serialization.Encoding):
+    """
+    Cette fonction génère une clée privée.
+
+    :param encoding: Nom de l'encodage
+
+    :param keyname: Nom de la clé à enregistrer
+
+    :param passphrase: Mot de passe de la clé
+
+    :return:
+    """
     private_key = rsa.generate_private_key(
         public_exponent=65537,
         key_size=2048,
     )
+    with open(keyname, "wb") as file:
+        file.write(private_key.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.BestAvailableEncryption(passphrase),
+        ))
     return private_key
 
 
 if __name__ == "__main__":
     # Generate our key
-    key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
-    )
+    key = generate_private_key("key.pem", b"passphrase", serialization.Encoding.PEM)
     # Write our key to disk for safe keeping
-    with open("key.pem", "wb") as pub_key:
-        pub_key.write(key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
-        ))
 
     # Various details about who we are. For a self-signed certificate the
     # subject and issuer are always the same.
@@ -73,17 +81,7 @@ if __name__ == "__main__":
     ## CSR
 
     # Generate our key
-    key = rsa.generate_private_key(
-        public_exponent=65537,
-        key_size=2048,
-    )
-    # Write our key to disk for safe keeping
-    with open("sub_key.pem", "wb") as pub_key:
-        pub_key.write(key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
-        ))
+    key = generate_private_key("sub_key.pem", b"passphrase", serialization.Encoding.PEM)
 
     # Generate a CSR
     csr = x509.CertificateSigningRequestBuilder().subject_name(x509.Name([
@@ -120,26 +118,9 @@ if __name__ == "__main__":
     csr = cryptography.x509.load_pem_x509_csr(bytes(csr_sub))
     root = cryptography.x509.load_pem_x509_certificate(bytes(cert_root))
 
-    # root.public_key().public_bytes(
-    #     cryptography.x509.base.serialization.Encoding.PEM,
-    #     cryptography.x509.base.serialization.PublicFormat.PKCS1
-    # )
+    # signing csr
 
-    ## signing csr
-
-    # Generate our key
-    # key = rsa.generate_private_key(
-    #     public_exponent=65537,
-    #     key_size=2048,
-    # )
     key = csr_sub_pkey
-    # Write our key to disk for safe keeping
-    with open("signed_key.pem", "wb") as pub_key:
-        pub_key.write(key.private_bytes(
-            encoding=serialization.Encoding.PEM,
-            format=serialization.PrivateFormat.TraditionalOpenSSL,
-            encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
-        ))
 
     # Various details about who we are. For a self-signed certificate the
     # subject and issuer are always the same.

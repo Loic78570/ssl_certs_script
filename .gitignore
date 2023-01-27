@@ -186,4 +186,5 @@ fabric.properties
 /venv9/
 /**/*.pem
 /*.pem
+/**/*.p12
 /CA_ROOT/

@@ -30,7 +30,7 @@ def generation_x509_autosigné():
     cert.gmtime_adj_notAfter(31536000)  # 315360000 is in seconds.
     cert.set_issuer(cert.get_subject())
     cert.set_pubkey(k)
-    cert.sign(k, 'sha512')
+    cert.sign(k, 'sha256')
     pub = crypto.dump_certificate(crypto.FILETYPE_PEM, cert)
     priv = crypto.dump_privatekey(crypto.FILETYPE_PEM, k)
     open(pubkey, "wb").write(pub)
@@ -68,7 +68,7 @@ def generation_x509():
     # cert.set_issuer(cert.get_subject())
     cert.set_pubkey(k)
     # root_pkey = crypto.load_privatekey(crypto.FILETYPE_PEM, bytes(open("root.key", "wb")))
-    cert.sign(k, 'sha512')
+    cert.sign(k, 'sha256')
 
 
     # pub = crypto.dump_certificate(crypto.FILETYPE_PEM, cert)
@@ -102,7 +102,7 @@ if __name__ == '__main__':
     certs.set_issuer(ca_cert.get_subject())
     # certs.set_pubkey(k)
 
-    certs.sign(ca_key, 'sha512')
+    certs.sign(ca_key, 'sha256')
     certificate = crypto.dump_certificate(crypto.FILETYPE_PEM, certs)
 
     open("zzz.pem", "wb").write(certificate)

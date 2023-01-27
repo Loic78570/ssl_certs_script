@@ -199,7 +199,8 @@ if __name__ == "__main__":
     subject = serveur_csr.subject
 
     # client
-    client_cert = sign_csr(csr_cert=client_csr, issuername=issuer, key_to_sign=root_privatekey, add_client_auth= True)
+    client_cert = sign_csr(csr_cert=client_csr, issuername=issuer, key_to_sign=root_privatekey,
+                           add_client_auth=True, add_server_auth=False, is_CA=False)
 
     os.remove("CA_ROOT/CA_CLIENT/sub_csr.pem")
     os.remove("CA_ROOT/CA_CLIENT/sub_key.pem")
@@ -239,7 +240,7 @@ if __name__ == "__main__":
     subject = serveur_csr.subject
 
     # client
-    serveur_cert = sign_csr(csr_cert=serveur_csr, issuername=issuer, key_to_sign=root_privatekey)
+    serveur_cert = sign_csr(csr_cert=serveur_csr, issuername=issuer, key_to_sign=root_privatekey, add_server_auth=True, add_client_auth=False, is_CA=False)
 
     with contextlib.suppress(FileNotFoundError):
         os.remove("CA_ROOT/CA_SERVER/sub_key.pem")
@@ -281,7 +282,8 @@ if __name__ == "__main__":
     subject = serveur_csr.subject
 
     # client
-    prof_cert = sign_csr(csr_cert=prof_csr, issuername=issuer, key_to_sign=client_privatekey)
+    prof_cert = sign_csr(csr_cert=prof_csr, issuername=issuer, key_to_sign=client_privatekey,
+                         add_client_auth=True, add_server_auth=False, is_CA=False)
 
     with contextlib.suppress(FileNotFoundError):
         os.remove("CA_ROOT/CA_CLIENT/PROF/sub_csr.pem")
@@ -310,20 +312,9 @@ if __name__ == "__main__":
 
     print("Signature du CSR Student par le CA Client...", end="")
 
-    # issuer = x509.Name([
-    #     x509.NameAttribute(NameOID.COUNTRY_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value),
-    #     x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME,
-    #                        client_cert.issuer.get_attributes_for_oid(NameOID.STATE_OR_PROVINCE_NAME)[0].value),
-    #     x509.NameAttribute(NameOID.LOCALITY_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value),
-    #     x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-    #                        client_cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value),
-    #     x509.NameAttribute(NameOID.COMMON_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value),
-    # ])
-
-    subject = serveur_csr.subject
-
     # client
-    student_cert = sign_csr(csr_cert=student_csr, issuername=issuer, key_to_sign=client_privatekey, add_client_auth=True)
+    student_cert = sign_csr(csr_cert=student_csr, issuername=issuer, key_to_sign=client_privatekey,
+                            add_client_auth=True, add_server_auth=False, is_CA=False)
 
     with contextlib.suppress(FileNotFoundError):
         os.remove("CA_ROOT/CA_CLIENT/STUDENT/sub_csr.pem")
@@ -428,16 +419,19 @@ if __name__ == "__main__":
                                                     encryption_algorithm=serialization.BestAvailableEncryption(
                                                         b"123456"))
 
-    encryption = (
-        PrivateFormat.PKCS12.encryption_builder(). kdf_rounds(50000).
-    key_cert_algorithm(pkcs12.PBES.PBESv2SHA256AndAES256CBC).
-    hmac_hash(hashes.SHA1()).build(b"passphrase")
-    )
-    cert = student_cert
-    key = student_privatekey
-    p12 = pkcs12.serialize_key_and_certificates(b"friendlyname", key, None, None, encryption)
+    # encryption = (
+    #     PrivateFormat.PKCS12.encryption_builder().kdf_rounds(50000).
+    #     key_cert_algorithm(pkcs12.PBES.PBESv2SHA256AndAES256CBC).
+    #     hmac_hash(hashes.SHA1()).build(b"passphrase")
+    # )
+    # cert = student_cert
+    # key = student_privatekey
+    # p12 = pkcs12.serialize_key_and_certificates(b"friendlyname", key, None, None, encryption)
 
     with open("CA_ROOT/CA_CLIENT/STUDENT/student.p12", "wb") as f:
-        f.write(p12)
+        f.write(student_pkcs12)
+
+    #problème sur mac. faire :
+    # openssl pkcs12 -export -out /Users/loic2/PycharmProjects/ssl_certs_script/CA_ROOT/CA_CLIENT/STUDENT/pfx.p12 -inkey /Users/loic2/PycharmProjects/ssl_certs_script/CA_ROOT/CA_CLIENT/STUDENT/sub_key.pem -in /Users/loic2/PycharmProjects/ssl_certs_script/CA_ROOT/CA_CLIENT/STUDENT/certificate_signed.pem -certfile /Users/loic2/PycharmProjects/ssl_certs_script/CA_ROOT/CA_CLIENT/certificate_signed.pem
 
     print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)

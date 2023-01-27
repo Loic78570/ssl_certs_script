@@ -24,10 +24,11 @@ if __name__ == "__main__":
         x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"Val d'Oise"),
         x509.NameAttribute(NameOID.LOCALITY_NAME, u"Cergy"),
         x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"CY TECH"),
+        x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u"CY TECH"),
         x509.NameAttribute(NameOID.COMMON_NAME, u"ROOT CY TECH"),
     ])
 
-    root_cert, root_privatekey = generate_CA(subject, issuer)
+    root_cert, root_privatekey = generate_root_CA(subject, issuer)
 
     os.makedirs("CA_ROOT", exist_ok=True)
 
@@ -54,6 +55,7 @@ if __name__ == "__main__":
         x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"VAL D'OISE"),
         x509.NameAttribute(NameOID.LOCALITY_NAME, u"CERGY"),
         x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"CLIENTS CY TECH"),
+        x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u"CLIENTS CY TECH"),
         x509.NameAttribute(NameOID.COMMON_NAME, u"CLIENT CY TECH"),
     ])
 
@@ -84,6 +86,7 @@ if __name__ == "__main__":
         x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"VAL D'OISE"),
         x509.NameAttribute(NameOID.LOCALITY_NAME, u"CERGY"),
         x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"SERVEUR CY TECH"),
+        x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u"SERVEUR CY TECH"),
         x509.NameAttribute(NameOID.COMMON_NAME, u"SERVEUR CY TECH"),
     ])
 
@@ -113,8 +116,8 @@ if __name__ == "__main__":
         x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"VAL D'OISE"),
         x509.NameAttribute(NameOID.LOCALITY_NAME, u"CERGY"),
         x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"prof"),
-        x509.NameAttribute(NameOID.EMAIL_ADDRESS, u"prof@cy-tech.fr"),
-        x509.NameAttribute(NameOID.COMMON_NAME, u"PROF cy techr"),
+        x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u"prof"),
+        x509.NameAttribute(NameOID.COMMON_NAME, u"PROF cy tech"),
     ])
 
     prof_csr, prof_privatekey = generate_csr(subject_cert=subject, issuer_cert=subject)
@@ -144,8 +147,9 @@ if __name__ == "__main__":
         x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"VAL D'OISE"),
         x509.NameAttribute(NameOID.LOCALITY_NAME, u"CERGY"),
         x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"student"),
-        x509.NameAttribute(NameOID.EMAIL_ADDRESS, u"student@cy-tech.fr"),
+        x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME, u"student"),
         x509.NameAttribute(NameOID.COMMON_NAME, u"STUDENT cy tech"),
+        # x509.NameAttribute(NameOID.EMAIL_ADDRESS, u"student@cy-tech.fr"),
     ])
 
     student_csr, student_privatekey = generate_csr(subject_cert=subject, issuer_cert=subject)
@@ -193,6 +197,8 @@ if __name__ == "__main__":
                            root_cert.issuer.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value),
         x509.NameAttribute(NameOID.ORGANIZATION_NAME,
                            root_cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value),
+        x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME,
+                           root_cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATIONAL_UNIT_NAME)[0].value),
         x509.NameAttribute(NameOID.COMMON_NAME, root_cert.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value),
     ])
 
@@ -200,7 +206,7 @@ if __name__ == "__main__":
 
     # client
     client_cert = sign_csr(csr_cert=client_csr, issuername=issuer, key_to_sign=root_privatekey,
-                           add_client_auth=True, add_server_auth=False, is_CA=False)
+                           add_client_auth=True, add_server_auth=False, is_CA=True, is_Intermediate=True)
 
     os.remove("CA_ROOT/CA_CLIENT/sub_csr.pem")
     os.remove("CA_ROOT/CA_CLIENT/sub_key.pem")
@@ -234,13 +240,16 @@ if __name__ == "__main__":
                            root_cert.issuer.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value),
         x509.NameAttribute(NameOID.ORGANIZATION_NAME,
                            root_cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value),
+        x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME,
+                           root_cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATIONAL_UNIT_NAME)[0].value),
         x509.NameAttribute(NameOID.COMMON_NAME, root_cert.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value),
     ])
 
     subject = serveur_csr.subject
 
     # client
-    serveur_cert = sign_csr(csr_cert=serveur_csr, issuername=issuer, key_to_sign=root_privatekey, add_server_auth=True, add_client_auth=False, is_CA=False)
+    serveur_cert = sign_csr(csr_cert=serveur_csr, issuername=issuer, key_to_sign=root_privatekey,
+                            add_server_auth=True, add_client_auth=False, is_CA=False, is_Intermediate=False)
 
     with contextlib.suppress(FileNotFoundError):
         os.remove("CA_ROOT/CA_SERVER/sub_key.pem")
@@ -275,6 +284,8 @@ if __name__ == "__main__":
                            client_cert.subject.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value),
         x509.NameAttribute(NameOID.ORGANIZATION_NAME,
                            client_cert.subject.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value),
+        x509.NameAttribute(NameOID.ORGANIZATIONAL_UNIT_NAME,
+                           root_cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATIONAL_UNIT_NAME)[0].value),
         x509.NameAttribute(NameOID.COMMON_NAME,
                            client_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value),
     ])
@@ -283,7 +294,7 @@ if __name__ == "__main__":
 
     # client
     prof_cert = sign_csr(csr_cert=prof_csr, issuername=issuer, key_to_sign=client_privatekey,
-                         add_client_auth=True, add_server_auth=False, is_CA=False)
+                         add_client_auth=True, add_server_auth=False, is_CA=False, is_Intermediate=False)
 
     with contextlib.suppress(FileNotFoundError):
         os.remove("CA_ROOT/CA_CLIENT/PROF/sub_csr.pem")
@@ -314,7 +325,7 @@ if __name__ == "__main__":
 
     # client
     student_cert = sign_csr(csr_cert=student_csr, issuername=issuer, key_to_sign=client_privatekey,
-                            add_client_auth=True, add_server_auth=False, is_CA=False)
+                            add_client_auth=True, add_server_auth=False, is_CA=False, is_Intermediate=False)
 
     with contextlib.suppress(FileNotFoundError):
         os.remove("CA_ROOT/CA_CLIENT/STUDENT/sub_csr.pem")

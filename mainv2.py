@@ -1,3 +1,4 @@
+import contextlib
 import os
 
 import colorama
@@ -101,6 +102,68 @@ if __name__ == "__main__":
         ))
 
     print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
+    print("Génération du certificat (prof@cy-tech.fr)...", end="")
+    # Generate our key
+
+    subject = x509.Name([
+        # Provide various details about who we are.
+        x509.NameAttribute(NameOID.COUNTRY_NAME, u"FR"),
+        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"VAL D'OISE"),
+        x509.NameAttribute(NameOID.LOCALITY_NAME, u"CERGY"),
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"prof"),
+        x509.NameAttribute(NameOID.EMAIL_ADDRESS, u"prof@cy_tech.fr"),
+        x509.NameAttribute(NameOID.COMMON_NAME, u"cy-tech.fr"),
+    ])
+
+    prof_csr, prof_privatekey = generate_csr(subject_cert=subject, issuer_cert=subject)
+
+    # Write our CSR out to disk.
+
+    os.makedirs("CA_ROOT/CA_CLIENT/PROF/", exist_ok=True)
+
+    with open("CA_ROOT/CA_CLIENT/PROF/sub_csr.pem", "wb") as pub_key:
+        pub_key.write(prof_csr.public_bytes(serialization.Encoding.PEM))
+
+    with open("CA_ROOT/CA_CLIENT/PROF/sub_key.pem", "wb") as pub_key:
+        pub_key.write(prof_privatekey.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
+        ))
+
+    print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
+
+
+    print("Génération du certificat (student@cy-tech.fr)...", end="")
+    # Generate our key
+
+    subject = x509.Name([
+        # Provide various details about who we are.
+        x509.NameAttribute(NameOID.COUNTRY_NAME, u"FR"),
+        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME, u"VAL D'OISE"),
+        x509.NameAttribute(NameOID.LOCALITY_NAME, u"CERGY"),
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME, u"student"),
+        x509.NameAttribute(NameOID.EMAIL_ADDRESS, u"student@cy_tech.fr"),
+        x509.NameAttribute(NameOID.COMMON_NAME, u"cy-tech.fr"),
+    ])
+
+    student_csr, student_privatekey = generate_csr(subject_cert=subject, issuer_cert=subject)
+
+    # Write our CSR out to disk.
+
+    os.makedirs("CA_ROOT/CA_CLIENT/STUDENT/", exist_ok=True)
+
+    with open("CA_ROOT/CA_CLIENT/STUDENT/sub_csr.pem", "wb") as pub_key:
+        pub_key.write(prof_csr.public_bytes(serialization.Encoding.PEM))
+
+    with open("CA_ROOT/CA_CLIENT/STUDENT/sub_key.pem", "wb") as pub_key:
+        pub_key.write(prof_privatekey.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
+        ))
+
+    print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
     ## signature du certificat CSR par le root
 
     # signing csr
@@ -173,19 +236,106 @@ if __name__ == "__main__":
     #client
     serveur_cert = sign_csr(csr_cert=serveur_csr, issuername=issuer, key_to_sign=root_privatekey)
 
-    os.remove("CA_ROOT/CA_SERVER/sub_csr.pem")
-    os.remove("CA_ROOT/CA_SERVER/sub_key.pem")
+    with contextlib.suppress(FileNotFoundError):
+        os.remove("CA_ROOT/CA_CLIENT/sub_key.pem")
+        os.remove("CA_ROOT/CA_CLIENT/sub_csr.pem")
 
     # Write our certificate out to disk.
-    with open("CA_ROOT/CA_SERVER/certificate_signed.pem", "wb") as pub_key:
+    with open("CA_ROOT/CA_CLIENT/certificate_signed.pem", "wb") as pub_key:
         pub_key.write(serveur_cert.public_bytes(serialization.Encoding.PEM))
 
         pub_key.write(b"\n" + root_cert.public_bytes(
             x509.base.serialization.Encoding.PEM
         ))
 
-    with open("CA_ROOT/CA_SERVER/sub_key.pem", "wb") as pub_key:
+    with open("CA_ROOT/CA_CLIENT/sub_key.pem", "wb") as pub_key:
         pub_key.write(serveur_privatekey.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
+        ))
+
+    # génère un certificate chain
+    print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
+
+
+    print("Signature du CSR Prof par le CA Client...", end="")
+
+    issuer = x509.Name([
+        x509.NameAttribute(NameOID.COUNTRY_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value),
+        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME,
+                           client_cert.issuer.get_attributes_for_oid(NameOID.STATE_OR_PROVINCE_NAME)[0].value),
+        x509.NameAttribute(NameOID.LOCALITY_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value),
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME,
+                           client_cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value),
+        x509.NameAttribute(NameOID.COMMON_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value),
+    ])
+
+    subject = serveur_csr.subject
+
+    #client
+    prof_cert = sign_csr(csr_cert=prof_csr, issuername=issuer, key_to_sign=client_privatekey)
+
+    with contextlib.suppress(FileNotFoundError):
+        os.remove("CA_ROOT/CA_CLIENT/PROF/sub_csr.pem")
+        os.remove("CA_ROOT/CA_CLIENT/PROF/sub_key.pem")
+
+    # Write our certificate out to disk.
+    with open("CA_ROOT/CA_CLIENT/PROF/certificate_signed.pem", "wb") as pub_key:
+        pub_key.write(prof_cert.public_bytes(serialization.Encoding.PEM))
+
+        pub_key.write(b"\n" + client_cert.public_bytes(
+            x509.base.serialization.Encoding.PEM
+        ))
+        pub_key.write(b"\n" + root_cert.public_bytes(
+            x509.base.serialization.Encoding.PEM
+        ))
+
+    with open("CA_ROOT/CA_CLIENT/PROF/sub_key.pem", "wb") as pub_key:
+        pub_key.write(prof_privatekey.private_bytes(
+            encoding=serialization.Encoding.PEM,
+            format=serialization.PrivateFormat.TraditionalOpenSSL,
+            encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
+        ))
+
+    # génère un certificate chain
+    print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
+
+
+    print("Signature du CSR Student par le CA Client...", end="")
+
+    issuer = x509.Name([
+        x509.NameAttribute(NameOID.COUNTRY_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value),
+        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME,
+                           client_cert.issuer.get_attributes_for_oid(NameOID.STATE_OR_PROVINCE_NAME)[0].value),
+        x509.NameAttribute(NameOID.LOCALITY_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value),
+        x509.NameAttribute(NameOID.ORGANIZATION_NAME,
+                           client_cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value),
+        x509.NameAttribute(NameOID.COMMON_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value),
+    ])
+
+    subject = serveur_csr.subject
+
+    #client
+    student_cert = sign_csr(csr_cert=student_csr, issuername=issuer, key_to_sign=client_privatekey)
+
+    with contextlib.suppress(FileNotFoundError):
+        os.remove("CA_ROOT/CA_CLIENT/STUDENT/sub_csr.pem")
+        os.remove("CA_ROOT/CA_CLIENT/STUDENT/sub_key.pem")
+
+    # Write our certificate out to disk.
+    with open("CA_ROOT/CA_CLIENT/STUDENT/certificate_signed.pem", "wb") as pub_key:
+        pub_key.write(student_cert.public_bytes(serialization.Encoding.PEM))
+
+        pub_key.write(b"\n" + client_cert.public_bytes(
+            x509.base.serialization.Encoding.PEM
+        ))
+        pub_key.write(b"\n" + root_cert.public_bytes(
+            x509.base.serialization.Encoding.PEM
+        ))
+
+    with open("CA_ROOT/CA_CLIENT/STUDENT/sub_key.pem", "wb") as pub_key:
+        pub_key.write(student_privatekey.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
@@ -223,8 +373,27 @@ if __name__ == "__main__":
             padding=hazmat.primitives.asymmetric.padding.PKCS1v15(),
             algorithm=serveur_cert.signature_hash_algorithm
         )
+        print(Fore.LIGHTGREEN_EX + "Succès!" + Fore.RESET)
+        print("SUJET SERVER", colorama.Fore.LIGHTCYAN_EX, serveur_cert.subject, colorama.Fore.RESET)
+        print("Verification de la hiérarchie de (ROOT > SERVEUR > PROF)... ", end="")
+        client_cert.public_key().verify(
+            signature=prof_cert.signature,
+            data=prof_cert.tbs_certificate_bytes,
+            padding=hazmat.primitives.asymmetric.padding.PKCS1v15(),
+            algorithm=prof_cert.signature_hash_algorithm
+        )
+        print(Fore.LIGHTGREEN_EX + "Succès!" + Fore.RESET)
+        print("SUJET SERVER", colorama.Fore.LIGHTCYAN_EX, serveur_cert.subject, colorama.Fore.RESET)
+        print("Verification de la hiérarchie de (ROOT > SERVEUR > STUDENT)... ", end="")
+        client_cert.public_key().verify(
+            signature=student_cert.signature,
+            data=student_cert.tbs_certificate_bytes,
+            padding=hazmat.primitives.asymmetric.padding.PKCS1v15(),
+            algorithm=student_cert.signature_hash_algorithm
+        )
     except InvalidSignature as exc:
         print(Fore.LIGHTRED_EX + "Erreur !" + Fore.RESET)
-        exit(InvalidSignature("Le certificat n'a pas pu être validé. Il y a une erreur."))
+        exit(exc)
+        # exit(InvalidSignature("Le certificat n'a pas pu être validé. Il y a une erreur."))
     else:
         print(Fore.LIGHTGREEN_EX + "Succès!" + Fore.RESET)

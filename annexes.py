@@ -83,4 +83,4 @@ def generate_csr(subject_cert: x509.Name, issuer_cert: x509.Name,):
     return csr, key_priv
 
 def sign_csr(csr_cert: x509.CertificateSigningRequest, issuername: x509.Name, key_to_sign: rsa.RSAPrivateKey):
-    return generate_cert(subject_cert=csr_cert.subject, issuer_cert=issuername, key_to_sign=key_to_sign, public_key=key_to_sign.public_key())
+    return generate_cert(subject_cert=csr_cert.subject, issuer_cert=issuername, key_to_sign=key_to_sign, public_key=csr_cert.public_key())

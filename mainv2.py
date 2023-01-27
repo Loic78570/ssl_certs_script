@@ -237,18 +237,18 @@ if __name__ == "__main__":
     serveur_cert = sign_csr(csr_cert=serveur_csr, issuername=issuer, key_to_sign=root_privatekey)
 
     with contextlib.suppress(FileNotFoundError):
-        os.remove("CA_ROOT/CA_CLIENT/sub_key.pem")
-        os.remove("CA_ROOT/CA_CLIENT/sub_csr.pem")
+        os.remove("CA_ROOT/CA_SERVER/sub_key.pem")
+        os.remove("CA_ROOT/CA_SERVER/sub_csr.pem")
 
     # Write our certificate out to disk.
-    with open("CA_ROOT/CA_CLIENT/certificate_signed.pem", "wb") as pub_key:
+    with open("CA_ROOT/CA_SERVER/certificate_signed.pem", "wb") as pub_key:
         pub_key.write(serveur_cert.public_bytes(serialization.Encoding.PEM))
 
         pub_key.write(b"\n" + root_cert.public_bytes(
             x509.base.serialization.Encoding.PEM
         ))
 
-    with open("CA_ROOT/CA_CLIENT/sub_key.pem", "wb") as pub_key:
+    with open("CA_ROOT/CA_SERVER/sub_key.pem", "wb") as pub_key:
         pub_key.write(serveur_privatekey.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
@@ -262,13 +262,13 @@ if __name__ == "__main__":
     print("Signature du CSR Prof par le CA Client...", end="")
 
     issuer = x509.Name([
-        x509.NameAttribute(NameOID.COUNTRY_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value),
+        x509.NameAttribute(NameOID.COUNTRY_NAME, client_cert.subject.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value),
         x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME,
-                           client_cert.issuer.get_attributes_for_oid(NameOID.STATE_OR_PROVINCE_NAME)[0].value),
-        x509.NameAttribute(NameOID.LOCALITY_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value),
+                           client_cert.subject.get_attributes_for_oid(NameOID.STATE_OR_PROVINCE_NAME)[0].value),
+        x509.NameAttribute(NameOID.LOCALITY_NAME, client_cert.subject.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value),
         x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                           client_cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value),
-        x509.NameAttribute(NameOID.COMMON_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value),
+                           client_cert.subject.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value),
+        x509.NameAttribute(NameOID.COMMON_NAME, client_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value),
     ])
 
     subject = serveur_csr.subject
@@ -284,12 +284,12 @@ if __name__ == "__main__":
     with open("CA_ROOT/CA_CLIENT/PROF/certificate_signed.pem", "wb") as pub_key:
         pub_key.write(prof_cert.public_bytes(serialization.Encoding.PEM))
 
-        pub_key.write(b"\n" + client_cert.public_bytes(
-            x509.base.serialization.Encoding.PEM
-        ))
-        pub_key.write(b"\n" + root_cert.public_bytes(
-            x509.base.serialization.Encoding.PEM
-        ))
+        # pub_key.write(b"\n" + client_cert.public_bytes(
+        #     x509.base.serialization.Encoding.PEM
+        # ))
+        # pub_key.write(b"\n" + root_cert.public_bytes(
+        #     x509.base.serialization.Encoding.PEM
+        # ))
 
     with open("CA_ROOT/CA_CLIENT/PROF/sub_key.pem", "wb") as pub_key:
         pub_key.write(prof_privatekey.private_bytes(
@@ -304,15 +304,15 @@ if __name__ == "__main__":
 
     print("Signature du CSR Student par le CA Client...", end="")
 
-    issuer = x509.Name([
-        x509.NameAttribute(NameOID.COUNTRY_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value),
-        x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME,
-                           client_cert.issuer.get_attributes_for_oid(NameOID.STATE_OR_PROVINCE_NAME)[0].value),
-        x509.NameAttribute(NameOID.LOCALITY_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value),
-        x509.NameAttribute(NameOID.ORGANIZATION_NAME,
-                           client_cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value),
-        x509.NameAttribute(NameOID.COMMON_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value),
-    ])
+    # issuer = x509.Name([
+    #     x509.NameAttribute(NameOID.COUNTRY_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.COUNTRY_NAME)[0].value),
+    #     x509.NameAttribute(NameOID.STATE_OR_PROVINCE_NAME,
+    #                        client_cert.issuer.get_attributes_for_oid(NameOID.STATE_OR_PROVINCE_NAME)[0].value),
+    #     x509.NameAttribute(NameOID.LOCALITY_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.LOCALITY_NAME)[0].value),
+    #     x509.NameAttribute(NameOID.ORGANIZATION_NAME,
+    #                        client_cert.issuer.get_attributes_for_oid(NameOID.ORGANIZATION_NAME)[0].value),
+    #     x509.NameAttribute(NameOID.COMMON_NAME, client_cert.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value),
+    # ])
 
     subject = serveur_csr.subject
 
@@ -327,12 +327,12 @@ if __name__ == "__main__":
     with open("CA_ROOT/CA_CLIENT/STUDENT/certificate_signed.pem", "wb") as pub_key:
         pub_key.write(student_cert.public_bytes(serialization.Encoding.PEM))
 
-        pub_key.write(b"\n" + client_cert.public_bytes(
-            x509.base.serialization.Encoding.PEM
-        ))
-        pub_key.write(b"\n" + root_cert.public_bytes(
-            x509.base.serialization.Encoding.PEM
-        ))
+        # pub_key.write(b"\n" + client_cert.public_bytes(
+        #     x509.base.serialization.Encoding.PEM
+        # ))
+        # pub_key.write(b"\n" + root_cert.public_bytes(
+        #     x509.base.serialization.Encoding.PEM
+        # ))
 
     with open("CA_ROOT/CA_CLIENT/STUDENT/sub_key.pem", "wb") as pub_key:
         pub_key.write(student_privatekey.private_bytes(
@@ -374,8 +374,8 @@ if __name__ == "__main__":
             algorithm=serveur_cert.signature_hash_algorithm
         )
         print(Fore.LIGHTGREEN_EX + "Succès!" + Fore.RESET)
-        print("SUJET SERVER", colorama.Fore.LIGHTCYAN_EX, serveur_cert.subject, colorama.Fore.RESET)
-        print("Verification de la hiérarchie de (ROOT > SERVEUR > PROF)... ", end="")
+        print("SUJET PROF", colorama.Fore.LIGHTCYAN_EX, prof_cert.subject, colorama.Fore.RESET)
+        print("Verification de la hiérarchie de (ROOT > CLIENT > PROF)... ", end="")
         client_cert.public_key().verify(
             signature=prof_cert.signature,
             data=prof_cert.tbs_certificate_bytes,
@@ -383,8 +383,8 @@ if __name__ == "__main__":
             algorithm=prof_cert.signature_hash_algorithm
         )
         print(Fore.LIGHTGREEN_EX + "Succès!" + Fore.RESET)
-        print("SUJET SERVER", colorama.Fore.LIGHTCYAN_EX, serveur_cert.subject, colorama.Fore.RESET)
-        print("Verification de la hiérarchie de (ROOT > SERVEUR > STUDENT)... ", end="")
+        print("SUJET CLIENT", colorama.Fore.LIGHTCYAN_EX, student_cert.subject, colorama.Fore.RESET)
+        print("Verification de la hiérarchie de (ROOT > CLIENT > STUDENT)... ", end="")
         client_cert.public_key().verify(
             signature=student_cert.signature,
             data=student_cert.tbs_certificate_bytes,

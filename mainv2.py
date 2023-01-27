@@ -284,12 +284,12 @@ if __name__ == "__main__":
     with open("CA_ROOT/CA_CLIENT/PROF/certificate_signed.pem", "wb") as pub_key:
         pub_key.write(prof_cert.public_bytes(serialization.Encoding.PEM))
 
-        # pub_key.write(b"\n" + client_cert.public_bytes(
-        #     x509.base.serialization.Encoding.PEM
-        # ))
-        # pub_key.write(b"\n" + root_cert.public_bytes(
-        #     x509.base.serialization.Encoding.PEM
-        # ))
+        pub_key.write(b"\n" + client_cert.public_bytes(
+            x509.base.serialization.Encoding.PEM
+        ))
+        pub_key.write(b"\n" + root_cert.public_bytes(
+            x509.base.serialization.Encoding.PEM
+        ))
 
     with open("CA_ROOT/CA_CLIENT/PROF/sub_key.pem", "wb") as pub_key:
         pub_key.write(prof_privatekey.private_bytes(
@@ -327,12 +327,12 @@ if __name__ == "__main__":
     with open("CA_ROOT/CA_CLIENT/STUDENT/certificate_signed.pem", "wb") as pub_key:
         pub_key.write(student_cert.public_bytes(serialization.Encoding.PEM))
 
-        # pub_key.write(b"\n" + client_cert.public_bytes(
-        #     x509.base.serialization.Encoding.PEM
-        # ))
-        # pub_key.write(b"\n" + root_cert.public_bytes(
-        #     x509.base.serialization.Encoding.PEM
-        # ))
+        pub_key.write(b"\n" + client_cert.public_bytes(
+            x509.base.serialization.Encoding.PEM
+        ))
+        pub_key.write(b"\n" + root_cert.public_bytes(
+            x509.base.serialization.Encoding.PEM
+        ))
 
     with open("CA_ROOT/CA_CLIENT/STUDENT/sub_key.pem", "wb") as pub_key:
         pub_key.write(student_privatekey.private_bytes(

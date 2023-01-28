@@ -1,5 +1,7 @@
 import datetime
 
+import colorama
+from OpenSSL.crypto import X509StoreContextError
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
@@ -24,36 +26,80 @@ def generate_private_key():
     return private_key
 
 
-def generate_cert(subject_cert: x509.Name, issuer_cert: x509.Name, key_to_sign: rsa.RSAPrivateKey,
+def generate_cert(subject_cert: x509.Name | x509.Certificate, issuer_cert: x509.Certificate | x509.Name, key_to_sign: rsa.RSAPrivateKey,
                   public_key: rsa.RSAPublicKey, add_client_auth: bool = False, add_server_auth=False, is_CA=False,
-                  is_Intermediate=False, is_ROOT=False):
+                  is_Intermediate=False, is_ROOT=False, is_for_web_server=False):
     cert = x509.CertificateBuilder()
 
-    cert = x509.CertificateBuilder(
-        subject_name=subject_cert, issuer_name=issuer_cert, public_key=public_key,
-        serial_number=x509.random_serial_number(), not_valid_before=datetime.datetime.utcnow(),
-        not_valid_after=datetime.datetime.utcnow() + datetime.timedelta(days=1000)
-        # Sign our certificate with our private key
-    ).add_extension(
+    if (type(issuer_cert) is x509.Certificate) or issuer_cert.__class__.__name__ == "Certificate":
+        print("Issuer cert is a x509.Certificate")
+        issuer_name = issuer_cert.subject
+    elif type(issuer_cert) is x509.Name:
+        print("Issuer cert is a x509.Name")
+        issuer_name = issuer_cert
+    else:
+        # print("issuer_cert is type: %s" % type(issuer_cert))
+        # print(issuer_cert.subject)
+        raise TypeError("issuer_cert must be a x509.Certificate or a x509.Name")
 
-        x509.SubjectAlternativeName([x509.DNSName(u"localhost"), x509.DNSName(u"cy-tech.fr")]),
-        critical=False,
+    if (type(subject_cert) is x509.Certificate) or subject_cert.__class__.__name__ == "Certificate":
+        print("Subject cert is a x509.Certificate")
+        subject_name = subject_cert.subject
+    elif type(subject_cert) is x509.Name:
+        print("Subject cert is a x509.Name")
+        subject_name = subject_cert
+    else:
+        # print("issuer_cert is type: %s" % type(issuer_cert))
+        # print(issuer_cert.subject)
+        raise TypeError("issuer_cert must be a x509.Certificate or a x509.Name")
+
+    cert = x509.CertificateBuilder(
+        subject_name=subject_name, issuer_name=issuer_name, public_key=public_key,
+        serial_number=x509.random_serial_number(), not_valid_before=datetime.datetime.utcnow(),
+        not_valid_after=datetime.datetime.utcnow() + datetime.timedelta(days=500)
         # Sign our certificate with our private key
-    ).add_extension(
-        x509.SubjectKeyIdentifier.from_public_key(public_key), critical=True
-    ).add_extension(
-        x509.AuthorityKeyIdentifier.from_issuer_public_key(public_key), critical=True
+
     )
 
-    if is_ROOT or (not is_CA and not is_Intermediate):
+    if is_ROOT:
         cert = cert.add_extension(
-            x509.BasicConstraints(ca=is_CA, path_length=None), critical=True
+            x509.BasicConstraints(ca=True, path_length=2), critical=True
+        ).add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(public_key), critical=False
         )
 
-    elif is_CA and is_Intermediate:
+    elif is_Intermediate: # intermediate is obviously a CA
         cert = cert.add_extension(
-            x509.BasicConstraints(ca=is_CA, path_length=0), critical=True
+            x509.BasicConstraints(ca=True, path_length=2), critical=True
             # Attention à adapter path_length en fonction du nombre d'intermédiaires
+        ).add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(public_key), critical=False
+        )
+
+    else:
+        cert = cert.add_extension(
+            x509.BasicConstraints(ca=False, path_length=None), critical=True
+        ).add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(public_key), critical=False
+        ).add_extension(
+            x509.SubjectAlternativeName([
+                x509.DNSName(u"localhost"),
+                x509.DNSName(u"cy-tech.fr")
+            ]),
+            critical=True,
+        # Sign our certificate with our private key
+
+    )
+
+    if is_ROOT:
+        cert = cert.add_extension(
+            x509.AuthorityKeyIdentifier.from_issuer_public_key(public_key), critical=False
+        )
+
+    else:  # not root -> intermediate pub key
+        cert = cert.add_extension(
+            # TODO : trouver la clé publique de l'intermédiaire
+            x509.AuthorityKeyIdentifier.from_issuer_public_key(issuer_cert.public_key()), critical=False
         )
 
     if is_CA:
@@ -65,7 +111,7 @@ def generate_cert(subject_cert: x509.Name, issuer_cert: x509.Name, key_to_sign: 
         )
     else:
         cert = cert.add_extension(
-            x509.KeyUsage(digital_signature=True, content_commitment=False, key_encipherment=False,
+            x509.KeyUsage(digital_signature=True, content_commitment=False, key_encipherment=True,
                           data_encipherment=False,
                           key_agreement=False, key_cert_sign=False, crl_sign=False, encipher_only=False,
                           decipher_only=False), critical=True
@@ -78,8 +124,9 @@ def generate_cert(subject_cert: x509.Name, issuer_cert: x509.Name, key_to_sign: 
             ]), critical=True
         )
     elif add_server_auth and not is_CA:
+        list = [x509.oid.ExtendedKeyUsageOID.SERVER_AUTH]
         cert = cert.add_extension(
-            x509.ExtendedKeyUsage([x509.oid.ExtendedKeyUsageOID.SERVER_AUTH]), critical=True
+            x509.ExtendedKeyUsage(list), critical=True
         )
 
     cert = cert.sign(key_to_sign, hashes.SHA512())
@@ -114,15 +161,17 @@ def generate_csr(subject_cert: x509.Name, issuer_cert: x509.Name, ):
         ]),
         critical=False
     ).add_extension(
-        x509.ExtendedKeyUsage([x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH]), critical=False
+        x509.ExtendedKeyUsage(
+            [x509.oid.ExtendedKeyUsageOID.CLIENT_AUTH]
+        ), critical=False
     ).sign(key_priv, hashes.SHA512())
 
     return csr, key_priv
 
 
-def sign_csr(csr_cert: x509.CertificateSigningRequest, issuername: x509.Name, key_to_sign: rsa.RSAPrivateKey,
-             add_client_auth=False, add_server_auth=False, is_CA=False, is_Intermediate=False):
-
-    return generate_cert(subject_cert=csr_cert.subject, issuer_cert=issuername, key_to_sign=key_to_sign,
+def sign_csr(csr_cert: x509.CertificateSigningRequest, issuer_certificate: x509.Certificate,
+             key_to_sign: rsa.RSAPrivateKey,
+             add_client_auth=False, add_server_auth=False, is_CA=False, is_Intermediate=False, is_for_web=False):
+    return generate_cert(subject_cert=csr_cert.subject, issuer_cert=issuer_certificate, key_to_sign=key_to_sign,
                          public_key=csr_cert.public_key(), add_client_auth=add_client_auth,
                          add_server_auth=add_server_auth, is_CA=is_CA, is_Intermediate=is_Intermediate, is_ROOT=False)

@@ -7,7 +7,7 @@ from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
 from OpenSSL import crypto
 
-from mainv2 import debug
+from main import debug
 
 
 def generate_private_key():
@@ -187,19 +187,19 @@ def verify():
     Programme qui exécute une vérification des certificats créés
     :return:
     """
-    with open('./CA_ROOT/CA_SERVER/certificate_signed.pem', 'r') as cert_file:
+    with open('../CA_ROOT/CA_SERVER/certificate_signed.pem', 'r') as cert_file:
         serveur_cert = cert_file.read()
 
-    with open('./CA_ROOT/CA_CLIENT/PROF/certificate_signed.pem', 'r') as cert_file:
+    with open('../CA_ROOT/CA_CLIENT/PROF/certificate_signed.pem', 'r') as cert_file:
         prof_cert = cert_file.read()
 
-    with open('./CA_ROOT/CA_CLIENT/STUDENT/certificate_signed.pem', 'r') as cert_file:
+    with open('../CA_ROOT/CA_CLIENT/STUDENT/certificate_signed.pem', 'r') as cert_file:
         student_cert = cert_file.read()
 
-    with open('./CA_ROOT/CA_CLIENT/certificate_signed.pem', 'r') as int_cert_file:
+    with open('../CA_ROOT/CA_CLIENT/certificate_signed.pem', 'r') as int_cert_file:
         client_cert = int_cert_file.read()
 
-    with open('./CA_ROOT/certificate.pem', 'r') as root_cert_file:
+    with open('../CA_ROOT/certificate.pem', 'r') as root_cert_file:
         root_cert = root_cert_file.read()
 
     trusted_certs = (client_cert, root_cert)

@@ -81,7 +81,7 @@ celerybeat-schedule
 .env
 
 # virtualenv
-venv/
+venv*/
 ENV/
 
 # Spyder project settings
@@ -183,8 +183,7 @@ fabric.properties
 
 # idea folder, uncomment if you don't need it
 # .idea
-/venv9/
 /**/*.pem
 /*.pem
 /**/*.p12
-/CA_ROOT/
+/CA_ROOT*/

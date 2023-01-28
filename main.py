@@ -168,8 +168,6 @@ if __name__ == "__main__":
     issuer = root_cert.subject  # Get issuer
     subject = serveur_csr.subject  # Get subject
 
-    print(211, root_cert, root_cert.__class__.__name__)
-
     client_cert = sign_csr(csr_cert=client_csr, issuer_certificate=root_cert, key_to_sign=root_private_key,
                            add_client_auth=True, add_server_auth=False, is_CA=True, is_Intermediate=True)  # Sign CSR
 

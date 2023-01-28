@@ -187,19 +187,19 @@ def verify():
     Programme qui exécute une vérification des certificats créés
     :return:
     """
-    with open('../CA_ROOT/CA_SERVER/certificate_signed.pem', 'r') as cert_file:
+    with open('CA_ROOT_DEV/CA_SERVER/certificate_signed.pem', 'r') as cert_file:
         serveur_cert = cert_file.read()
 
-    with open('../CA_ROOT/CA_CLIENT/PROF/certificate_signed.pem', 'r') as cert_file:
+    with open('CA_ROOT_DEV/CA_CLIENT/PROF/certificate_signed.pem', 'r') as cert_file:
         prof_cert = cert_file.read()
 
-    with open('../CA_ROOT/CA_CLIENT/STUDENT/certificate_signed.pem', 'r') as cert_file:
+    with open('CA_ROOT_DEV/CA_CLIENT/STUDENT/certificate_signed.pem', 'r') as cert_file:
         student_cert = cert_file.read()
 
-    with open('../CA_ROOT/CA_CLIENT/certificate_signed.pem', 'r') as int_cert_file:
+    with open('CA_ROOT_DEV/CA_CLIENT/certificate_signed.pem', 'r') as int_cert_file:
         client_cert = int_cert_file.read()
 
-    with open('../CA_ROOT/certificate.pem', 'r') as root_cert_file:
+    with open('CA_ROOT_DEV/certificate.pem', 'r') as root_cert_file:
         root_cert = root_cert_file.read()
 
     trusted_certs = (client_cert, root_cert)
@@ -208,9 +208,9 @@ def verify():
         verified = verify_chain_of_trust(cert, trusted_certs)
 
         if verified:
-            print(colorama.Fore.LIGHTGREEN_EX, f'Certificate verified', colorama.Fore.RESET)
+            print(colorama.Fore.LIGHTGREEN_EX, f'Certificate verified !', colorama.Fore.RESET)
         else:
-            print(colorama.Fore.LIGHTRED_EX, f'Certificate not verified', colorama.Fore.RESET, cert)
+            print(colorama.Fore.LIGHTRED_EX, f'Certificate not verified...', colorama.Fore.RESET, cert)
 
 
 def verify_chain_of_trust(cert_pem, trusted_cert_pems):

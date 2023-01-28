@@ -31,11 +31,11 @@ if __name__ == "__main__":
 
     os.makedirs("CA_ROOT_DEV", exist_ok=True)  # Create directory for Root CA
 
-    with open("CA_ROOT_DEV/certificate.pem", "wb") as pub_key:  # Write Root CA public key
-        pub_key.write(root_cert.public_bytes(serialization.Encoding.PEM))
+    with open("CA_ROOT_DEV/certificate.pem", "wb") as public_key:  # Write Root CA public key
+        public_key.write(root_cert.public_bytes(serialization.Encoding.PEM))
 
-    with open("CA_ROOT_DEV/key.pem", "wb") as file:  # Write Root CA private key
-        file.write(root_private_key.private_bytes(
+    with open("CA_ROOT_DEV/key.pem", "wb") as private_key:  # Write Root CA private key
+        private_key.write(root_private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
@@ -61,11 +61,11 @@ if __name__ == "__main__":
 
     os.makedirs("CA_ROOT_DEV/CA_CLIENT/", exist_ok=True)  # Create directory for Client CA in Root CA directory
 
-    with open("CA_ROOT_DEV/CA_CLIENT/sub_csr.pem", "wb") as pub_key:  # Write Client CA CSR
-        pub_key.write(client_csr.public_bytes(serialization.Encoding.PEM))
+    with open("CA_ROOT_DEV/CA_CLIENT/sub_csr.pem", "wb") as public_key:  # Write Client CA CSR
+        public_key.write(client_csr.public_bytes(serialization.Encoding.PEM))
 
-    with open("CA_ROOT_DEV/CA_CLIENT/sub_key.pem", "wb") as pub_key:  # Write Client CA private key
-        pub_key.write(client_private_key.private_bytes(
+    with open("CA_ROOT_DEV/CA_CLIENT/sub_key.pem", "wb") as public_key:  # Write Client CA private key
+        public_key.write(client_private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
@@ -90,11 +90,11 @@ if __name__ == "__main__":
 
     os.makedirs("CA_ROOT_DEV/CA_SERVER/", exist_ok=True)  # Create directory for Server CA in Root CA directory
 
-    with open("CA_ROOT_DEV/CA_SERVER/sub_csr.pem", "wb") as pub_key:  # Write Server CA CSR
-        pub_key.write(serveur_csr.public_bytes(serialization.Encoding.PEM))
+    with open("CA_ROOT_DEV/CA_SERVER/sub_csr.pem", "wb") as public_key:  # Write Server CA CSR
+        public_key.write(serveur_csr.public_bytes(serialization.Encoding.PEM))
 
-    with open("CA_ROOT_DEV/CA_SERVER/sub_key.pem", "wb") as pub_key:  # Write Server CA private key
-        pub_key.write(serveur_private_key.private_bytes(
+    with open("CA_ROOT_DEV/CA_SERVER/sub_key.pem", "wb") as public_key:  # Write Server CA private key
+        public_key.write(serveur_private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
@@ -119,11 +119,11 @@ if __name__ == "__main__":
 
     os.makedirs("CA_ROOT_DEV/CA_CLIENT/PROF/", exist_ok=True)  # Create directory for Prof CA in Client CA directory
 
-    with open("CA_ROOT_DEV/CA_CLIENT/PROF/sub_csr.pem", "wb") as pub_key:  # Write Prof CA CSR
-        pub_key.write(prof_csr.public_bytes(serialization.Encoding.PEM))
+    with open("CA_ROOT_DEV/CA_CLIENT/PROF/sub_csr.pem", "wb") as public_key:  # Write Prof CA CSR
+        public_key.write(prof_csr.public_bytes(serialization.Encoding.PEM))
 
-    with open("CA_ROOT_DEV/CA_CLIENT/PROF/sub_key.pem", "wb") as pub_key:  # Write Prof CA private key
-        pub_key.write(prof_private_key.private_bytes(
+    with open("CA_ROOT_DEV/CA_CLIENT/PROF/sub_key.pem", "wb") as public_key:  # Write Prof CA private key
+        public_key.write(prof_private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
@@ -149,11 +149,11 @@ if __name__ == "__main__":
     os.makedirs("CA_ROOT_DEV/CA_CLIENT/STUDENT/", exist_ok=True)  # Create directory for Student CA in Client CA
     # directory
 
-    with open("CA_ROOT_DEV/CA_CLIENT/STUDENT/sub_csr.pem", "wb") as pub_key:  # Write Student CA CSR
-        pub_key.write(prof_csr.public_bytes(serialization.Encoding.PEM))
+    with open("CA_ROOT_DEV/CA_CLIENT/STUDENT/sub_csr.pem", "wb") as public_key:  # Write Student CA CSR
+        public_key.write(prof_csr.public_bytes(serialization.Encoding.PEM))
 
-    with open("CA_ROOT_DEV/CA_CLIENT/STUDENT/sub_key.pem", "wb") as pub_key:  # Write Student CA private key
-        pub_key.write(prof_private_key.private_bytes(
+    with open("CA_ROOT_DEV/CA_CLIENT/STUDENT/sub_key.pem", "wb") as public_key:  # Write Student CA private key
+        public_key.write(prof_private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
@@ -174,14 +174,14 @@ if __name__ == "__main__":
     os.remove("CA_ROOT_DEV/CA_CLIENT/sub_csr.pem")  # Remove CSR CLIENT
     os.remove("CA_ROOT_DEV/CA_CLIENT/sub_key.pem")  # Remove private key CLIENT
 
-    with open("CA_ROOT_DEV/CA_CLIENT/certificate_signed.pem", "wb") as pub_key:  # Write signed certificate
-        pub_key.write(client_cert.public_bytes(serialization.Encoding.PEM))
-        pub_key.write(b"\n" + root_cert.public_bytes(
+    with open("CA_ROOT_DEV/CA_CLIENT/certificate_signed.pem", "wb") as public_key:  # Write signed certificate
+        public_key.write(client_cert.public_bytes(serialization.Encoding.PEM))
+        public_key.write(b"\n" + root_cert.public_bytes(
             x509.base.serialization.Encoding.PEM
         ))
 
-    with open("CA_ROOT_DEV/CA_CLIENT/sub_key.pem", "wb") as pub_key:  # Write private key CLIENT
-        pub_key.write(client_private_key.private_bytes(
+    with open("CA_ROOT_DEV/CA_CLIENT/sub_key.pem", "wb") as public_key:  # Write private key CLIENT
+        public_key.write(client_private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
@@ -200,11 +200,11 @@ if __name__ == "__main__":
         os.remove("CA_ROOT_DEV/CA_SERVER/sub_key.pem")
         os.remove("CA_ROOT_DEV/CA_SERVER/sub_csr.pem")
 
-    with open("CA_ROOT_DEV/CA_SERVER/certificate_signed.pem", "wb") as pub_key:  # Write signed certificate
-        pub_key.write(serveur_cert.public_bytes(serialization.Encoding.PEM))
+    with open("CA_ROOT_DEV/CA_SERVER/certificate_signed.pem", "wb") as public_key:  # Write signed certificate
+        public_key.write(serveur_cert.public_bytes(serialization.Encoding.PEM))
 
-    with open("CA_ROOT_DEV/CA_SERVER/sub_key.pem", "wb") as pub_key:  # Write private key
-        pub_key.write(serveur_private_key.private_bytes(
+    with open("CA_ROOT_DEV/CA_SERVER/sub_key.pem", "wb") as public_key:  # Write private key
+        public_key.write(serveur_private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
@@ -223,17 +223,17 @@ if __name__ == "__main__":
         os.remove("CA_ROOT_DEV/CA_CLIENT/PROF/sub_csr.pem")
         os.remove("CA_ROOT_DEV/CA_CLIENT/PROF/sub_key.pem")
 
-    with open("CA_ROOT_DEV/CA_CLIENT/PROF/certificate_signed.pem", "wb") as pub_key:  # Write signed certificate
-        pub_key.write(prof_cert.public_bytes(serialization.Encoding.PEM))
-        pub_key.write(b"\n" + client_cert.public_bytes(
+    with open("CA_ROOT_DEV/CA_CLIENT/PROF/certificate_signed.pem", "wb") as public_key:  # Write signed certificate
+        public_key.write(prof_cert.public_bytes(serialization.Encoding.PEM))
+        public_key.write(b"\n" + client_cert.public_bytes(
             x509.base.serialization.Encoding.PEM
         ))
-        pub_key.write(b"\n" + root_cert.public_bytes(
+        public_key.write(b"\n" + root_cert.public_bytes(
             x509.base.serialization.Encoding.PEM
         ))
 
-    with open("CA_ROOT_DEV/CA_CLIENT/PROF/sub_key.pem", "wb") as pub_key:  # Write private key
-        pub_key.write(prof_private_key.private_bytes(
+    with open("CA_ROOT_DEV/CA_CLIENT/PROF/sub_key.pem", "wb") as public_key:  # Write private key
+        public_key.write(prof_private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.NoEncryption(),
@@ -253,17 +253,17 @@ if __name__ == "__main__":
         os.remove("CA_ROOT_DEV/CA_CLIENT/STUDENT/sub_key.pem")
 
     # Write our certificate out to disk.
-    with open("CA_ROOT_DEV/CA_CLIENT/STUDENT/certificate_signed.pem", "wb") as pub_key:  # Write signed certificate
-        pub_key.write(student_cert.public_bytes(serialization.Encoding.PEM))
-        pub_key.write(b"\n" + client_cert.public_bytes(
+    with open("CA_ROOT_DEV/CA_CLIENT/STUDENT/certificate_signed.pem", "wb") as public_key:  # Write signed certificate
+        public_key.write(student_cert.public_bytes(serialization.Encoding.PEM))
+        public_key.write(b"\n" + client_cert.public_bytes(
             x509.base.serialization.Encoding.PEM
         ))
-        pub_key.write(b"\n" + root_cert.public_bytes(
+        public_key.write(b"\n" + root_cert.public_bytes(
             x509.base.serialization.Encoding.PEM
         ))
 
-    with open("CA_ROOT_DEV/CA_CLIENT/STUDENT/sub_key.pem", "wb") as pub_key:  # Write private key
-        pub_key.write(student_private_key.private_bytes(
+    with open("CA_ROOT_DEV/CA_CLIENT/STUDENT/sub_key.pem", "wb") as public_key:  # Write private key
+        public_key.write(student_private_key.private_bytes(
             encoding=serialization.Encoding.PEM,
             format=serialization.PrivateFormat.TraditionalOpenSSL,
             encryption_algorithm=serialization.NoEncryption(),

@@ -8,6 +8,7 @@ from cryptography.hazmat.primitives.asymmetric import rsa
 from OpenSSL import crypto
 
 from main import debug
+from messages.messages import Certificate
 
 
 def generate_private_key():
@@ -182,7 +183,7 @@ def sign_csr(csr_cert: x509.CertificateSigningRequest, issuer_certificate: x509.
                          add_server_auth=add_server_auth, is_CA=is_CA, is_Intermediate=is_Intermediate, is_ROOT=False)
 
 
-def certificate_verification():
+def verify_certificate():
     """
     Programme qui exécute une vérification des certificats créés
     :return:
@@ -237,11 +238,11 @@ def verify_chain_of_trust(cert_pem, trusted_cert_pems):
     # val = None
     try:
         store_ctx.verify_certificate()
-        print("\t✅", end="")
+        print(Certificate.success, end="")
         val = True
     except X509StoreContextError:
         # print(e)
-        print("\t❌", end="")
+        print(Certificate.error, end="")
         val = False
 
     print("", certificate.get_issuer().CN, ">", certificate.get_subject().CN, end="")

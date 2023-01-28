@@ -1,6 +1,7 @@
 import contextlib
 import os
 
+from colorama import Fore
 from cryptography import hazmat
 from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import serialization
@@ -10,7 +11,7 @@ from cryptography.x509.base import serialization
 from cryptography.x509.oid import NameOID
 
 from functions.annexes import *
-from messages import Certificate
+from messages.messages import Certificate
 
 debug = False
 
@@ -278,52 +279,27 @@ if __name__ == "__main__":
     # ----------------------- START - Vérification des certificats et des signatures ------------------------- #
     try:
         print("Vérification des certificats (clefs publiques / signatures)")
-        print(f"\tCertificat {client_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value} "
-              f"signé par {root_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value}... ", end="")
-        root_cert.public_key().certificate_verification(  # Verify signature of client Certificate
-            signature=client_cert.signature,
-            data=client_cert.tbs_certificate_bytes,
-            padding=hazmat.primitives.asymmetric.padding.PKCS1v15(),
-            algorithm=client_cert.signature_hash_algorithm
-        )
-        print(Certificate.success)
-
-        print(f"\tCertificat {serveur_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value} "
-              f"signé par {root_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value}... ", end="")
-        root_cert.public_key().certificate_verification(  # Verify signature of server Certificate
-            signature=serveur_cert.signature,
-            data=serveur_cert.tbs_certificate_bytes,
-            padding=hazmat.primitives.asymmetric.padding.PKCS1v15(),
-            algorithm=serveur_cert.signature_hash_algorithm
-        )
-        print(Certificate.success)
-
-        print(f"\tCertificat {prof_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value} "
-              f"signé par {client_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value}... ", end="")
-        client_cert.public_key().certificate_verification(  # Verify signature of prof Certificate
-            signature=prof_cert.signature,
-            data=prof_cert.tbs_certificate_bytes,
-            padding=hazmat.primitives.asymmetric.padding.PKCS1v15(),
-            algorithm=prof_cert.signature_hash_algorithm
-        )
-        print(Certificate.success)
-
-        print(f"\tCertificat {prof_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value} "
-              f"signé par {client_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value}... ", end="")
-        client_cert.public_key().certificate_verification(  # Verify signature of student Certificate
-            signature=student_cert.signature,
-            data=student_cert.tbs_certificate_bytes,
-            padding=hazmat.primitives.asymmetric.padding.PKCS1v15(),
-            algorithm=student_cert.signature_hash_algorithm
-        )
-        print(Certificate.success)
+        for certificate in (root_cert, client_cert, serveur_cert, student_cert, prof_cert):
+            txt = f"Certificat {certificate.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value} " \
+                  f"signé par {certificate.issuer.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value} "
+            if certificate.issuer == root_cert.subject:
+                verifier = root_cert.public_key()
+            else:
+                verifier = client_cert.public_key()
+            verifier.verify(  # Verify signature of Certificate
+                signature=certificate.signature,
+                data=certificate.tbs_certificate_bytes,
+                padding=hazmat.primitives.asymmetric.padding.PKCS1v15(),
+                algorithm=certificate.signature_hash_algorithm
+            )
+            print("\r" + Certificate.success + txt)
     except InvalidSignature as exc:
         print(Certificate.error)
         # exit(exc)
         exit(InvalidSignature("Le certificat n'a pas pu être validé. Il y a une erreur."))
 
     print("Verification de la validité des certificats... ")
-    certificate_verification()
+    verify_certificate()
     print("Terminé!\n")
 
     # ----------------------- END - Vérification des certificats et des signatures ------------------------- #

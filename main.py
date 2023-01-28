@@ -323,7 +323,7 @@ if __name__ == "__main__":
         exit(InvalidSignature("Le certificat n'a pas pu être validé. Il y a une erreur."))
 
     print("Verification de la validité des certificats... ")
-    verify()
+    certificate_verification()
     print("Terminé!\n")
 
     # ----------------------- END - Vérification des certificats et des signatures ------------------------- #

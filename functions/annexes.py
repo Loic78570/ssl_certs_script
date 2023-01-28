@@ -182,7 +182,7 @@ def sign_csr(csr_cert: x509.CertificateSigningRequest, issuer_certificate: x509.
                          add_server_auth=add_server_auth, is_CA=is_CA, is_Intermediate=is_Intermediate, is_ROOT=False)
 
 
-def verify():
+def certificate_verification():
     """
     Programme qui exécute une vérification des certificats créés
     :return:

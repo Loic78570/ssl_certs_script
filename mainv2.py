@@ -15,6 +15,8 @@ from cryptography.hazmat.primitives.serialization.pkcs12 import serialize_key_an
 
 from annexes import *
 
+debug = False
+
 if __name__ == "__main__":
     print("Génération du CA root...", end="")
     # Generate our key
@@ -208,8 +210,6 @@ if __name__ == "__main__":
 
     print("Signature du CSR Serveur par le CA Root...", end="")
 
-    subject = serveur_csr.subject
-
     # client
     serveur_cert = sign_csr(csr_cert=serveur_csr, issuer_certificate=root_cert, key_to_sign=root_privatekey,
                             add_server_auth=True, add_client_auth=False, is_CA=False, is_Intermediate=False, is_for_web=True)
@@ -347,6 +347,10 @@ if __name__ == "__main__":
         # exit(InvalidSignature("Le certificat n'a pas pu être validé. Il y a une erreur."))
     else:
         print(Fore.LIGHTGREEN_EX + "Succès!\n" + Fore.RESET)
+
+    print("Verification de la validité des certificats... ")
+    verify()
+    print("Terminé!\n")
 
     # génération des pkcs12
     print("Génération du PKCS12 du prof... ", end="")

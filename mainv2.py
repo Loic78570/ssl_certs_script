@@ -57,8 +57,7 @@ if __name__ == "__main__":
         x509.NameAttribute(NameOID.COMMON_NAME, u"CLIENT CY TECH"),
     ])
 
-    client_csr, client_private_key = generate_csr(subject_cert=subject,
-                                                  issuer_cert=subject)  # Generate CSR and private key
+    client_csr, client_private_key = generate_csr(subject_cert=subject)  # Generate CSR and private key
 
     os.makedirs("CA_ROOT_DEV/CA_CLIENT/", exist_ok=True)  # Create directory for Client CA in Root CA directory
 
@@ -87,8 +86,7 @@ if __name__ == "__main__":
         x509.NameAttribute(NameOID.COMMON_NAME, u"SERVEUR CY TECH"),
     ])
 
-    serveur_csr, serveur_private_key = generate_csr(subject_cert=subject,
-                                                    issuer_cert=subject)  # Generate CSR and private key
+    serveur_csr, serveur_private_key = generate_csr(subject_cert=subject)  # Generate CSR and private key
 
     os.makedirs("CA_ROOT_DEV/CA_SERVER/", exist_ok=True)  # Create directory for Server CA in Root CA directory
 
@@ -117,8 +115,7 @@ if __name__ == "__main__":
         x509.NameAttribute(NameOID.COMMON_NAME, u"PROF cy tech"),
     ])
 
-    prof_csr, prof_private_key = generate_csr(subject_cert=subject,
-                                              issuer_cert=subject)  # Generate CSR and private key
+    prof_csr, prof_private_key = generate_csr(subject_cert=subject)  # Generate CSR and private key
 
     os.makedirs("CA_ROOT_DEV/CA_CLIENT/PROF/", exist_ok=True)  # Create directory for Prof CA in Client CA directory
 
@@ -147,8 +144,7 @@ if __name__ == "__main__":
         x509.NameAttribute(NameOID.COMMON_NAME, u"STUDENT cy tech"),
     ])
 
-    student_csr, student_private_key = generate_csr(subject_cert=subject,
-                                                    issuer_cert=subject)  # Generate CSR and private key
+    student_csr, student_private_key = generate_csr(subject_cert=subject)  # Generate CSR and private key
 
     os.makedirs("CA_ROOT_DEV/CA_CLIENT/STUDENT/", exist_ok=True)  # Create directory for Student CA in Client CA
     # directory
@@ -200,8 +196,7 @@ if __name__ == "__main__":
     print("Signature du CSR Serveur par le CA Root...", end="")
 
     serveur_cert = sign_csr(csr_cert=serveur_csr, issuer_certificate=root_cert, key_to_sign=root_private_key,
-                            add_server_auth=True, add_client_auth=False, is_CA=False, is_Intermediate=False,
-                            is_for_web=True)  # Sign CSR
+                            add_server_auth=True, add_client_auth=False, is_CA=False, is_Intermediate=False)  # Sign CSR
 
     with contextlib.suppress(FileNotFoundError):  # Remove CSR and private key
         os.remove("CA_ROOT_DEV/CA_SERVER/sub_key.pem")

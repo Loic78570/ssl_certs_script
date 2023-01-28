@@ -5,6 +5,7 @@ from OpenSSL.crypto import X509StoreContextError
 from cryptography import x509
 from cryptography.hazmat.primitives import hashes
 from cryptography.hazmat.primitives.asymmetric import rsa
+from OpenSSL import crypto
 
 from mainv2 import debug
 
@@ -12,12 +13,6 @@ from mainv2 import debug
 def generate_private_key():
     """
     Cette fonction génère une clée privée.
-
-    :param encoding: Nom de l'encodage
-
-    :param keyname: Nom de la clé à enregistrer
-
-    :param passphrase: Mot de passe de la clé
 
     :return:
     """
@@ -28,9 +23,10 @@ def generate_private_key():
     return private_key
 
 
-def generate_cert(subject_cert: x509.Name | x509.Certificate, issuer_cert: x509.Certificate | x509.Name, key_to_sign: rsa.RSAPrivateKey,
-                  public_key: rsa.RSAPublicKey, add_client_auth: bool = False, add_server_auth=False, is_CA=False,
-                  is_Intermediate=False, is_ROOT=False, is_for_web_server=False):
+def generate_cert(subject_cert: x509.Name | x509.Certificate, issuer_cert: x509.Certificate | x509.Name,
+                  key_to_sign: rsa.RSAPrivateKey, public_key: rsa.RSAPublicKey, add_client_auth: bool = False,
+                  add_server_auth=False, is_CA=False,
+                  is_Intermediate=False, is_ROOT=False):
     """
     Cette fonction génère un certificat.
     Elle prend en paramètre un certificat sujet, un certificat émetteur, une clé privée et une clé publique.
@@ -41,9 +37,8 @@ def generate_cert(subject_cert: x509.Name | x509.Certificate, issuer_cert: x509.
     :param add_client_auth: Booléen pour ajouter l'extension client auth
     :param add_server_auth: Booléen pour ajouter l'extension server auth
     :param is_CA: Booléen pour ajouter qui ajoute l'extension CA et qui indique que le certificat est une CA
-    :param is_Intermediate: Booléen pour ajouter qui ajoute l'extension CA et qui indique que le certificat est un intermédiaire
+    :param is_Intermediate: Booléen pour ajouter qui ajoute l'extension CA et indique que c'est un intermédiaire
     :param is_ROOT: Booléen pour ajouter qui ajoute l'extension CA et qui indique que le certificat est
-    :param is_for_web_server: Booléen pour ajouter l'extension pour un serveur web (sans le client auth)
     :return: Le certificat généré et signé par la clé privée et le certificat émetteur passés en paramètres
     """
 
@@ -82,7 +77,7 @@ def generate_cert(subject_cert: x509.Name | x509.Certificate, issuer_cert: x509.
             x509.SubjectKeyIdentifier.from_public_key(public_key), critical=False
         )
 
-    elif is_Intermediate: # intermediate is obviously a CA
+    elif is_Intermediate:  # intermediate is obviously a CA
         cert = cert.add_extension(
             x509.BasicConstraints(ca=True, path_length=2), critical=True
             # Attention à adapter path_length en fonction du nombre d'intermédiaires
@@ -101,7 +96,7 @@ def generate_cert(subject_cert: x509.Name | x509.Certificate, issuer_cert: x509.
                 x509.DNSName(u"cy-tech.fr")
             ]),
             critical=True,
-    )
+        )
 
     if is_ROOT:
         cert = cert.add_extension(
@@ -159,7 +154,7 @@ def generate_root_CA(subject_cert, issuer_cert):
     return cert, key
 
 
-def generate_csr(subject_cert: x509.Name, issuer_cert: x509.Name, ):
+def generate_csr(subject_cert: x509.Name):
     key_priv = generate_private_key()
 
     # Generate a CSR
@@ -181,14 +176,10 @@ def generate_csr(subject_cert: x509.Name, issuer_cert: x509.Name, ):
 
 def sign_csr(csr_cert: x509.CertificateSigningRequest, issuer_certificate: x509.Certificate,
              key_to_sign: rsa.RSAPrivateKey,
-             add_client_auth=False, add_server_auth=False, is_CA=False, is_Intermediate=False, is_for_web=False):
+             add_client_auth=False, add_server_auth=False, is_CA=False, is_Intermediate=False):
     return generate_cert(subject_cert=csr_cert.subject, issuer_cert=issuer_certificate, key_to_sign=key_to_sign,
                          public_key=csr_cert.public_key(), add_client_auth=add_client_auth,
-                         add_server_auth=add_server_auth, is_CA=is_CA, is_Intermediate=is_Intermediate, is_ROOT=False,
-                         is_for_web_server=is_for_web)
-
-
-from OpenSSL import crypto
+                         add_server_auth=add_server_auth, is_CA=is_CA, is_Intermediate=is_Intermediate, is_ROOT=False)
 
 
 def verify():
@@ -209,7 +200,7 @@ def verify():
         client_cert = int_cert_file.read()
 
     with open('./CA_ROOT/certificate.pem', 'r') as root_cert_file:
-        root_cert = root_cert_file .read()
+        root_cert = root_cert_file.read()
 
     trusted_certs = (client_cert, root_cert)
 
@@ -239,18 +230,19 @@ def verify_chain_of_trust(cert_pem, trusted_cert_pems):
         store.add_cert(trusted_cert)
 
     # Create a X590StoreContext with the cert and trusted certs
-    # and verify the the chain of trust
+    # and verify the chain of trust
     store_ctx = crypto.X509StoreContext(store, certificate)
     # Returns None if certificate can be validated
 
+    # val = None
     try:
         store_ctx.verify_certificate()
         print("\t✅", end="")
         val = True
-    except X509StoreContextError as e:
+    except X509StoreContextError:
         # print(e)
         print("\t❌", end="")
         val = False
-    finally:
-        print("", certificate.get_issuer().CN, ">", certificate.get_subject().CN, end="")
-        return val
+
+    print("", certificate.get_issuer().CN, ">", certificate.get_subject().CN, end="")
+    return val

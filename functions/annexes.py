@@ -146,10 +146,10 @@ def generate_root_CA(subject_cert, issuer_cert):
                          public_key=key.public_key(), is_CA=True, add_client_auth=False, add_server_auth=False,
                          is_Intermediate=False, is_ROOT=True)
 
-    # Various details about who we are. For a self-signed certificate the
+    # Various details about who we are. For a self-signed Certificate the
     # subject and issuer are always the same.
 
-    # Write our certificate out to disk.
+    # Write our Certificate out to disk.
 
     return cert, key
 
@@ -160,7 +160,7 @@ def generate_csr(subject_cert: x509.Name):
     # Generate a CSR
     csr = x509.CertificateSigningRequestBuilder().subject_name(subject_cert).add_extension(
         x509.SubjectAlternativeName([
-            # Describe what sites we want this certificate for.
+            # Describe what sites we want this Certificate for.
             x509.DNSName(u"localhost"),
             x509.DNSName(u"cy-tech.fr"),
         ]),
@@ -199,7 +199,7 @@ def verify():
     with open('CA_ROOT_DEV/CA_CLIENT/certificate_signed.pem', 'r') as int_cert_file:
         client_cert = int_cert_file.read()
 
-    with open('CA_ROOT_DEV/certificate.pem', 'r') as root_cert_file:
+    with open('CA_ROOT_DEV/Certificate.pem', 'r') as root_cert_file:
         root_cert = root_cert_file.read()
 
     trusted_certs = (client_cert, root_cert)
@@ -232,7 +232,7 @@ def verify_chain_of_trust(cert_pem, trusted_cert_pems):
     # Create a X590StoreContext with the cert and trusted certs
     # and verify the chain of trust
     store_ctx = crypto.X509StoreContext(store, certificate)
-    # Returns None if certificate can be validated
+    # Returns None if Certificate can be validated
 
     # val = None
     try:

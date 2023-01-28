@@ -1,8 +1,8 @@
 import contextlib
 import os
 
-from colorama import Fore
 from cryptography import hazmat
+from cryptography.exceptions import InvalidSignature
 from cryptography.hazmat.primitives import serialization
 from cryptography.hazmat.primitives.asymmetric import rsa, padding
 from cryptography.hazmat.primitives.serialization.pkcs12 import serialize_key_and_certificates
@@ -10,6 +10,7 @@ from cryptography.x509.base import serialization
 from cryptography.x509.oid import NameOID
 
 from functions.annexes import *
+from messages import Certificate
 
 debug = False
 
@@ -27,7 +28,7 @@ if __name__ == "__main__":
     ])
 
     root_cert, root_private_key = generate_root_CA(subject,
-                                                   issuer)  # Generate Root CA certificate and private key
+                                                   issuer)  # Generate Root CA Certificate and private key
 
     os.makedirs("CA_ROOT_DEV", exist_ok=True)  # Create directory for Root CA
 
@@ -41,7 +42,7 @@ if __name__ == "__main__":
             encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
         ))
 
-    print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
+    print(Certificate.success)
     # ----------------------- END - Génération du CA root ------------------------- #
 
     # ----------------------- START - Génération du CA intermédiaire (Client) ------------------------- #
@@ -71,7 +72,7 @@ if __name__ == "__main__":
             encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
         ))
 
-    print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
+    print(Certificate.success)
     # ----------------------- END - Génération du CA intermédiaire (Client) ------------------------- #
 
     # ----------------------- START - Génération du CA intermédiaire (Serveur) ------------------------- #
@@ -100,7 +101,7 @@ if __name__ == "__main__":
             encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
         ))
 
-    print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
+    print(Certificate.success)
     # ----------------------- END - Génération du CA intermédiaire (Serveur) ------------------------- #
 
     # ----------------------- START - Génération du certificat (prof@cy-tech.fr) ------------------------- #
@@ -129,7 +130,7 @@ if __name__ == "__main__":
             encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
         ))
 
-    print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
+    print(Certificate.success)
     # ----------------------- END - Génération du certificat (prof@cy-tech.fr) ------------------------- #
 
     # ----------------------- START - Génération du certificat (student@cy-tech.fr) ------------------------- #
@@ -159,7 +160,7 @@ if __name__ == "__main__":
             encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
         ))
 
-    print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
+    print(Certificate.success)
     # ----------------------- END - Génération du certificat (student@cy-tech.fr) ------------------------- #
 
     # ----------------------- START - Signature du CSR Client par le CA Root ------------------------- #
@@ -174,7 +175,7 @@ if __name__ == "__main__":
     os.remove("CA_ROOT_DEV/CA_CLIENT/sub_csr.pem")  # Remove CSR CLIENT
     os.remove("CA_ROOT_DEV/CA_CLIENT/sub_key.pem")  # Remove private key CLIENT
 
-    with open("CA_ROOT_DEV/CA_CLIENT/certificate_signed.pem", "wb") as public_key:  # Write signed certificate
+    with open("CA_ROOT_DEV/CA_CLIENT/certificate_signed.pem", "wb") as public_key:  # Write signed Certificate
         public_key.write(client_cert.public_bytes(serialization.Encoding.PEM))
         public_key.write(b"\n" + root_cert.public_bytes(
             x509.base.serialization.Encoding.PEM
@@ -187,7 +188,7 @@ if __name__ == "__main__":
             encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
         ))
 
-    print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
+    print(Certificate.success)
     # ----------------------- END - Signature du CSR Client par le CA Root ------------------------- #
 
     # ----------------------- START - Signature du CSR Serveur par le CA Root ------------------------- #
@@ -200,7 +201,7 @@ if __name__ == "__main__":
         os.remove("CA_ROOT_DEV/CA_SERVER/sub_key.pem")
         os.remove("CA_ROOT_DEV/CA_SERVER/sub_csr.pem")
 
-    with open("CA_ROOT_DEV/CA_SERVER/certificate_signed.pem", "wb") as public_key:  # Write signed certificate
+    with open("CA_ROOT_DEV/CA_SERVER/certificate_signed.pem", "wb") as public_key:  # Write signed Certificate
         public_key.write(serveur_cert.public_bytes(serialization.Encoding.PEM))
 
     with open("CA_ROOT_DEV/CA_SERVER/sub_key.pem", "wb") as public_key:  # Write private key
@@ -210,7 +211,7 @@ if __name__ == "__main__":
             encryption_algorithm=serialization.BestAvailableEncryption(b"passphrase"),
         ))
 
-    print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
+    print(Certificate.success)
     # ----------------------- END - Signature du CSR Serveur par le CA Root ------------------------- #
 
     # ----------------------- START - Signature du CSR Prof par le CA Client ------------------------- #
@@ -223,7 +224,7 @@ if __name__ == "__main__":
         os.remove("CA_ROOT_DEV/CA_CLIENT/PROF/sub_csr.pem")
         os.remove("CA_ROOT_DEV/CA_CLIENT/PROF/sub_key.pem")
 
-    with open("CA_ROOT_DEV/CA_CLIENT/PROF/certificate_signed.pem", "wb") as public_key:  # Write signed certificate
+    with open("CA_ROOT_DEV/CA_CLIENT/PROF/certificate_signed.pem", "wb") as public_key:  # Write signed Certificate
         public_key.write(prof_cert.public_bytes(serialization.Encoding.PEM))
         public_key.write(b"\n" + client_cert.public_bytes(
             x509.base.serialization.Encoding.PEM
@@ -239,7 +240,7 @@ if __name__ == "__main__":
             encryption_algorithm=serialization.NoEncryption(),
         ))
 
-    print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
+    print(Certificate.success)
     # ----------------------- END - Signature du CSR Prof par le CA Client ------------------------- #
 
     # ----------------------- START - Signature du CSR Student par le CA Client ------------------------- #
@@ -252,8 +253,8 @@ if __name__ == "__main__":
         os.remove("CA_ROOT_DEV/CA_CLIENT/STUDENT/sub_csr.pem")
         os.remove("CA_ROOT_DEV/CA_CLIENT/STUDENT/sub_key.pem")
 
-    # Write our certificate out to disk.
-    with open("CA_ROOT_DEV/CA_CLIENT/STUDENT/certificate_signed.pem", "wb") as public_key:  # Write signed certificate
+    # Write our Certificate out to disk.
+    with open("CA_ROOT_DEV/CA_CLIENT/STUDENT/certificate_signed.pem", "wb") as public_key:  # Write signed Certificate
         public_key.write(student_cert.public_bytes(serialization.Encoding.PEM))
         public_key.write(b"\n" + client_cert.public_bytes(
             x509.base.serialization.Encoding.PEM
@@ -269,54 +270,57 @@ if __name__ == "__main__":
             encryption_algorithm=serialization.NoEncryption(),
         ))
 
-    print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
+    print(Certificate.success)
     # ----------------------- END - Signature du CSR Student par le CA Client ------------------------- #
 
-    print("\nSUJET ROOT ", colorama.Fore.LIGHTCYAN_EX, root_cert.issuer, colorama.Fore.RESET)
+    # print("\nSUJET ROOT ", colorama.Fore.LIGHTCYAN_EX, root_cert.issuer, colorama.Fore.RESET)
 
     # ----------------------- START - Vérification des certificats et des signatures ------------------------- #
     try:
-        print("SUJET CLIENT", colorama.Fore.LIGHTCYAN_EX, client_cert.subject, colorama.Fore.RESET)
-        print("Verification de la hiérarchie de (ROOT > CLIENT)... ", end="")
-        root_cert.public_key().verify(  # Verify signature of client certificate
+        print("Vérification des certificats (clefs publiques / signatures)")
+        print(f"\tCertificat {client_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value} "
+              f"signé par {root_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value}... ", end="")
+        root_cert.public_key().certificate_verification(  # Verify signature of client Certificate
             signature=client_cert.signature,
             data=client_cert.tbs_certificate_bytes,
             padding=hazmat.primitives.asymmetric.padding.PKCS1v15(),
             algorithm=client_cert.signature_hash_algorithm
         )
-        print(Fore.LIGHTGREEN_EX + "Succès!" + Fore.RESET)
-        print("SUJET SERVER", colorama.Fore.LIGHTCYAN_EX, serveur_cert.subject, colorama.Fore.RESET)
-        print("Verification de la hiérarchie de (ROOT > SERVEUR)... ", end="")
-        root_cert.public_key().verify(  # Verify signature of server certificate
+        print(Certificate.success)
+
+        print(f"\tCertificat {serveur_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value} "
+              f"signé par {root_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value}... ", end="")
+        root_cert.public_key().certificate_verification(  # Verify signature of server Certificate
             signature=serveur_cert.signature,
             data=serveur_cert.tbs_certificate_bytes,
             padding=hazmat.primitives.asymmetric.padding.PKCS1v15(),
             algorithm=serveur_cert.signature_hash_algorithm
         )
-        print(Fore.LIGHTGREEN_EX + "Succès!" + Fore.RESET)
-        print("SUJET PROF", colorama.Fore.LIGHTCYAN_EX, prof_cert.subject, colorama.Fore.RESET)
-        print("Verification de la hiérarchie de (ROOT > CLIENT > PROF)... ", end="")
-        client_cert.public_key().verify(  # Verify signature of prof certificate
+        print(Certificate.success)
+
+        print(f"\tCertificat {prof_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value} "
+              f"signé par {client_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value}... ", end="")
+        client_cert.public_key().certificate_verification(  # Verify signature of prof Certificate
             signature=prof_cert.signature,
             data=prof_cert.tbs_certificate_bytes,
             padding=hazmat.primitives.asymmetric.padding.PKCS1v15(),
             algorithm=prof_cert.signature_hash_algorithm
         )
-        print(Fore.LIGHTGREEN_EX + "Succès!" + Fore.RESET)
-        print("SUJET CLIENT", colorama.Fore.LIGHTCYAN_EX, student_cert.subject, colorama.Fore.RESET)
-        print("Verification de la hiérarchie de (ROOT > CLIENT > STUDENT)... ", end="")
-        client_cert.public_key().verify(  # Verify signature of student certificate
+        print(Certificate.success)
+
+        print(f"\tCertificat {prof_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value} "
+              f"signé par {client_cert.subject.get_attributes_for_oid(NameOID.COMMON_NAME)[0].value}... ", end="")
+        client_cert.public_key().certificate_verification(  # Verify signature of student Certificate
             signature=student_cert.signature,
             data=student_cert.tbs_certificate_bytes,
             padding=hazmat.primitives.asymmetric.padding.PKCS1v15(),
             algorithm=student_cert.signature_hash_algorithm
         )
-    except Exception as exc:
-        print(Fore.LIGHTRED_EX + "Erreur !" + Fore.RESET)
-        exit(exc)
-        # exit(InvalidSignature("Le certificat n'a pas pu être validé. Il y a une erreur."))
-    else:
-        print(Fore.LIGHTGREEN_EX + "Succès!\n" + Fore.RESET)
+        print(Certificate.success)
+    except InvalidSignature as exc:
+        print(Certificate.error)
+        # exit(exc)
+        exit(InvalidSignature("Le certificat n'a pas pu être validé. Il y a une erreur."))
 
     print("Verification de la validité des certificats... ")
     verify()
@@ -336,7 +340,7 @@ if __name__ == "__main__":
     with open("CA_ROOT_DEV/CA_CLIENT/PROF/prof.p12", "wb") as f:  # Write prof PKCS12
         f.write(prof_pkcs12)
 
-    print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
+    print(Certificate.success)
     print("Génération du PKCS12 de l'étudiant... ", end="")
 
     student_pkcs12 = serialize_key_and_certificates(name=b"prof",
@@ -355,5 +359,5 @@ if __name__ == "__main__":
     # /Users/loic2/PycharmProjects/ssl_certs_script/CA_ROOT/CA_CLIENT/STUDENT/certificate_signed.pem -certfile
     # /Users/loic2/PycharmProjects/ssl_certs_script/CA_ROOT/CA_CLIENT/certificate_signed.pem
 
-    print(Fore.LIGHTGREEN_EX, "Terminé!", Fore.RESET, end=None)
+    print(Certificate.success)
     # ----------------------- END - Génération des PKCS12 ------------------------- #

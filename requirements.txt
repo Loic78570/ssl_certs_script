@@ -4,5 +4,5 @@ cryptography==39.0.0
 pip==22.3.1
 pycparser==2.21
 pyOpenSSL==23.0.0
-setuptools==65.5.1
+setuptools==66.1.1
 wheel==0.38.4

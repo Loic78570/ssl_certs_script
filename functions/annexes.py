@@ -71,26 +71,25 @@ def generate_cert(subject_cert: x509.Name | x509.Certificate, issuer_cert: x509.
         not_valid_after=datetime.datetime.utcnow() + datetime.timedelta(days=500)
     )
 
-    if is_ROOT:
-        cert = cert.add_extension(
-            x509.BasicConstraints(ca=True, path_length=2), critical=True
-        ).add_extension(
-            x509.SubjectKeyIdentifier.from_public_key(public_key), critical=False
-        )
+    if is_CA:
+        if is_ROOT:
+            cert = cert.add_extension(
+                x509.BasicConstraints(ca=True, path_length=1), critical=True
+            ).add_extension(
+                x509.SubjectKeyIdentifier.from_public_key(public_key), critical=False
+            ).add_extension(
+                x509.AuthorityKeyIdentifier.from_issuer_public_key(public_key), critical=False
+            )
 
-    elif is_Intermediate:  # intermediate is obviously a CA
-        cert = cert.add_extension(
-            x509.BasicConstraints(ca=True, path_length=2), critical=True
-            # Attention à adapter path_length en fonction du nombre d'intermédiaires
-        ).add_extension(
-            x509.SubjectKeyIdentifier.from_public_key(public_key), critical=False
-        )
+        elif is_Intermediate:  # intermediate is obviously a CA
+            cert = cert.add_extension(
+                x509.BasicConstraints(ca=True, path_length=0), critical=True
+                # Attention à adapter path_length en fonction du nombre d'intermédiaires
+            )
 
     else:
         cert = cert.add_extension(
             x509.BasicConstraints(ca=False, path_length=None), critical=True
-        ).add_extension(
-            x509.SubjectKeyIdentifier.from_public_key(public_key), critical=False
         ).add_extension(
             x509.SubjectAlternativeName([
                 x509.DNSName(u"localhost"),
@@ -99,14 +98,11 @@ def generate_cert(subject_cert: x509.Name | x509.Certificate, issuer_cert: x509.
             critical=True,
         )
 
-    if is_ROOT:
-        cert = cert.add_extension(
-            x509.AuthorityKeyIdentifier.from_issuer_public_key(public_key), critical=False
-        )
-
-    else:  # not root -> intermediate pub key
+    if not is_ROOT:  # not root -> intermediate pub key
         cert = cert.add_extension(
             x509.AuthorityKeyIdentifier.from_issuer_public_key(issuer_cert.public_key()), critical=False
+        ).add_extension(
+            x509.SubjectKeyIdentifier.from_public_key(public_key), critical=False
         )
 
     if is_CA:

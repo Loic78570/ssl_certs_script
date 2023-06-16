@@ -76,8 +76,8 @@ if __name__ == "__main__":
     print(Certificate.success)
     # ----------------------- END - Génération du CA intermédiaire (Client) ------------------------- #
 
-    # ----------------------- START - Génération du CA intermédiaire (Serveur) ------------------------- #
-    print("Génération du CA intermédiaire (Serveur)...", end="")
+    # ----------------------- START - Génération du Certificat (Serveur) ------------------------- #
+    print("Génération du certificat (Serveur)...", end="")
 
     subject = x509.Name([  # Create subject
         x509.NameAttribute(NameOID.COUNTRY_NAME, u"FR"),
@@ -103,7 +103,7 @@ if __name__ == "__main__":
         ))
 
     print(Certificate.success)
-    # ----------------------- END - Génération du CA intermédiaire (Serveur) ------------------------- #
+    # ----------------------- END - Génération du Certificat (Serveur) ------------------------- #
 
     # ----------------------- START - Génération du certificat (prof@cy-tech.fr) ------------------------- #
     print("Génération du certificat (prof@cy-tech.fr)...", end="")

@@ -93,7 +93,8 @@ def generate_cert(subject_cert: x509.Name | x509.Certificate, issuer_cert: x509.
         ).add_extension(
             x509.SubjectAlternativeName([
                 x509.DNSName(u"localhost"),
-                x509.DNSName(u"cy-tech.fr")
+                x509.DNSName(u"cy-tech.fr"),
+                x509.DNSName(u"192.168.1.1")
             ]),
             critical=True,
         )
@@ -160,6 +161,7 @@ def generate_csr(subject_cert: x509.Name):
             # Describe what sites we want this Certificate for.
             x509.DNSName(u"localhost"),
             x509.DNSName(u"cy-tech.fr"),
+            x509.DNSName(u"192.168.1.1"),
         ]),
         critical=False
     ).add_extension(

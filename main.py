@@ -328,7 +328,7 @@ if __name__ == "__main__":
     print("Génération du PKCS12 du serveur... ", end="")
 
     serveur_p12 = serialize_key_and_certificates(name=b"Serveur Signature",
-                                                 key=serveur_private_key,
+                                                    key=serveur_private_key,
                                                  cert=serveur_cert,
                                                  cas=[root_cert],
                                                  encryption_algorithm=serialization.BestAvailableEncryption(

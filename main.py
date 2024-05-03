@@ -28,8 +28,7 @@ if __name__ == "__main__":
         x509.NameAttribute(NameOID.COMMON_NAME, u"ROOT CY TECH"),
     ])
 
-    root_cert, root_private_key = generate_root_CA(subject,
-                                                   issuer)  # Generate Root CA Certificate and private key
+    root_cert, root_private_key = generate_root_CA(subject, issuer)  # Generate Root CA Certificate and private key
 
     os.makedirs("CA_ROOT_DEV", exist_ok=True)  # Create directory for Root CA
 
@@ -326,8 +325,19 @@ if __name__ == "__main__":
                                                     encryption_algorithm=serialization.BestAvailableEncryption(
                                                         b"passphrase"))  # Generate student PKCS12
 
-    with open("CA_ROOT_DEV/CA_CLIENT/STUDENT/student.p12", "wb") as f:  # Write student PKCS12
-        f.write(student_pkcs12)
+    print("Génération du PKCS12 du serveur... ", end="")
+
+    serveur_p12 = serialize_key_and_certificates(name=b"Serveur Signature",
+                                                 key=serveur_private_key,
+                                                 cert=serveur_cert,
+                                                 cas=[root_cert],
+                                                 encryption_algorithm=serialization.BestAvailableEncryption(
+                                                     b"passphrase"))  # Generate student PKCS12
+
+    with open("CA_ROOT_DEV/CA_SERVER/server.p12", "wb") as f:  # Write student PKCS12
+        f.write(serveur_p12)
+
+    print(Certificate.success)
 
     # problème sur macOS. faire : openssl pkcs12 -export -out
     # /Users/loic2/PycharmProjects/ssl_certs_script/CA_ROOT/CA_CLIENT/STUDENT/pfx.p12 -inkey
